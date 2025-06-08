@@ -1,9 +1,11 @@
 package com.example.employee.config;
 
 import com.example.employee.filters.JwtRequestFilter;
+import com.example.employee.utils.JwtAuthenticationEntryPoint;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -13,6 +15,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfigurationSource;
 
 @Configuration
 @EnableWebSecurity
@@ -20,6 +23,13 @@ public class SecurityConfig {
 
     @Autowired
     private JwtRequestFilter jwtRequestFilter;
+
+    @Autowired
+    private CorsConfigurationSource corsConfigurationSource;
+
+    @Autowired
+    private JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
+
 
     @Bean
     public PasswordEncoder passwordEncoder(){
@@ -36,12 +46,15 @@ public class SecurityConfig {
         System.out.println("=== CONFIGURING SECURITY FILTER CHAIN ===");
 
         http
+                .cors(cors -> cors.configurationSource(corsConfigurationSource))
                 .csrf(csrf -> {
                     csrf.disable();
                     System.out.println("CSRF disabled");
                 })
+                .exceptionHandling(ex -> ex.authenticationEntryPoint(jwtAuthenticationEntryPoint))
                 .authorizeHttpRequests(auth -> {
-                    auth.requestMatchers("/auth/register", "/auth/login").permitAll();
+                    auth.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll(); // Allow preflight
+                    auth.requestMatchers("/auth/register", "/auth/login","/employee/records","/employee/records/**").permitAll();
                     auth.anyRequest().authenticated();
                     System.out.println("Authorization rules configured: /register and /login permitAll, others authenticated");
                 })

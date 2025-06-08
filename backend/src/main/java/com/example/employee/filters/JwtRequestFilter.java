@@ -9,6 +9,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
+import org.springframework.util.AntPathMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
@@ -21,9 +22,13 @@ public class JwtRequestFilter extends OncePerRequestFilter {
     @Autowired
     private JwtUtil jwtUtil;
 
+    private static final AntPathMatcher pathMatcher = new AntPathMatcher();
+
     private static final List<String> PUBLIC_ENDPOINTS = Arrays.asList(
             "/auth/register",
-            "/auth/login"
+            "/auth/login",
+            "/employee/records",
+            "/employee/records/**"
     );
 
     @Override
@@ -79,11 +84,10 @@ public class JwtRequestFilter extends OncePerRequestFilter {
                 }
             } catch (Exception e) {
                 System.out.println("JWT validation error: " + e.getMessage());
-                e.printStackTrace();
             }
         } else {
             System.out.println("JWT token not found for protected endpoint: " + requestPath);
-//            throw new ResourceNotFoundException("JWT token not found");
+            throw new ResourceNotFoundException("JWT token not found");
         }
 
         System.out.println("=== END JWT FILTER DEBUG ===");
@@ -91,8 +95,12 @@ public class JwtRequestFilter extends OncePerRequestFilter {
     }
 
     private boolean isPublicEndpoint(String requestPath) {
-        boolean isPublic = PUBLIC_ENDPOINTS.stream().anyMatch(requestPath::startsWith);
-        System.out.println("Checking if '" + requestPath + "' is public: " + isPublic);
-        return isPublic;
+//        boolean isPublic = PUBLIC_ENDPOINTS.stream().anyMatch(requestPath::startsWith);
+//        System.out.println("Checking if '" + requestPath + "' is public: " + isPublic);
+//        return isPublic;
+
+
+        return PUBLIC_ENDPOINTS.stream().anyMatch(publicPath ->
+                pathMatcher.match(publicPath, requestPath));
     }
 }

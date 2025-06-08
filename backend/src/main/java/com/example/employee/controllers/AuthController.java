@@ -7,6 +7,7 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.*;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
@@ -85,6 +86,20 @@ public class AuthController {
                 username + " logged out successfully";
 
         return ResponseEntity.ok(responseMessage); // Return the constructed message
+    }
+
+    @GetMapping("/profile")
+    public ResponseEntity<String> getProfile(HttpServletRequest request) {
+        try {
+            String token = extractJwtFromRequest(request);
+            if (token != null) {
+                String username = jwtUtil.getUsernameFromToken(token);
+                return ResponseEntity.ok("Authenticated as: " + username);
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Not authenticated");
+        }
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Not authenticated");
     }
 
     private String extractJwtFromRequest(HttpServletRequest request) {

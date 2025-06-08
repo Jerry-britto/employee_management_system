@@ -20,26 +20,26 @@ public class EmployeeController {
 	private EmployeeService empService;
 
 	// CREATE
-	@PostMapping
+	@PostMapping("/register")
 	public ResponseEntity<Employee> registerEmployee(@Valid @RequestBody Employee employee) {
 		Employee savedEmployee = empService.registerEmployee(employee);
 		return new ResponseEntity<>(savedEmployee, HttpStatus.CREATED);
 	}
 
 	// READ ALL
-	@GetMapping
+	@GetMapping("/records")
 	public ResponseEntity<List<Employee>> getAllEmployees() {
 		return ResponseEntity.ok(empService.getAllEmployees());
 	}
 
 	// READ BY ID
-	@GetMapping("/{id}")
+	@GetMapping("/records/{id}")
 	public ResponseEntity<Employee> getEmployeeById(@PathVariable String id) {
 		return ResponseEntity.ok(empService.getEmployeeById(id));
 	}
 	
 	// UPDATE
-	@PutMapping
+	@PutMapping("/update")
 	public ResponseEntity<?> updateEmployee(@Valid @RequestBody Employee employee) {
 
 	    // ID is required
@@ -54,7 +54,7 @@ public class EmployeeController {
 
 
 	// DELETE
-	@DeleteMapping("/{id}")
+	@DeleteMapping("/remove/{id}")
 	public ResponseEntity<Void> deleteEmployeeRecord(@PathVariable String id) {
 		empService.deleteEmployeeRecord(id);
 		return new ResponseEntity<>(HttpStatus.NO_CONTENT);
