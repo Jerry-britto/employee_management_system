@@ -1,4 +1,4 @@
-# 📘 Employee Management System – Documentation
+# 📘 Employee Management System
 
 ## 📝 Introduction
 
