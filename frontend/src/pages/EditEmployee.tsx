@@ -1,20 +1,28 @@
-
-import React, { useState, useEffect } from 'react';
-import { useNavigate, useParams, Link } from 'react-router-dom';
+import React, { useState, useEffect } from "react";
+import { useNavigate, useParams, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { Employee } from "@/types/employee";
-import { ArrowLeft, Save } from 'lucide-react';
+import { ArrowLeft, Save } from "lucide-react";
 
 const EditEmployee = () => {
-  const [employeeName, setEmployeeName] = useState('');
-  const [employeeDesignation, setEmployeeDesignation] = useState('');
-  const [employeeJobRole, setEmployeeJobRole] = useState('');
+  const [employeeName, setEmployeeName] = useState("");
+  const [employeeDesignation, setEmployeeDesignation] = useState("");
+  const [employeeJobRole, setEmployeeJobRole] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [originalEmployee, setOriginalEmployee] = useState<Employee | null>(
+    null
+  );
   const [isLoadingData, setIsLoadingData] = useState(true);
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
@@ -22,9 +30,9 @@ const EditEmployee = () => {
 
   useEffect(() => {
     // Check authentication
-    const isAuthenticated = localStorage.getItem('isAuthenticated');
+    const isAuthenticated = localStorage.getItem("isAuthenticated");
     if (!isAuthenticated) {
-      navigate('/');
+      navigate("/");
       return;
     }
 
@@ -36,31 +44,36 @@ const EditEmployee = () => {
 
   const loadEmployee = async (employeeId: string) => {
     try {
-      const response = await fetch(`http://localhost:8000/employee/records/${employeeId}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials:'include'
-      });
+      const response = await fetch(
+        `http://localhost:8000/employee/records/${employeeId}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+        }
+      );
 
       if (response.status >= 200 && response.status < 300) {
         const employee: Employee = await response.json();
         setEmployeeName(employee.employeeName);
         setEmployeeDesignation(employee.employeeDesignation);
         setEmployeeJobRole(employee.employeeJobRole);
+        setOriginalEmployee(employee);
         setIsLoadingData(false);
       } else {
         throw new Error(`Failed to fetch employee. Status: ${response.status}`);
       }
     } catch (error) {
-      console.error('Error loading employee:', error);
+      console.error("Error loading employee:", error);
       toast({
         title: "Error",
-        description: "Failed to load employee data. Please check if the backend server is running.",
+        description:
+          "Failed to load employee data. Please check if the backend server is running.",
         variant: "destructive",
       });
-      navigate('/dashboard');
+      navigate("/dashboard");
     }
   };
 
@@ -69,7 +82,11 @@ const EditEmployee = () => {
     setIsLoading(true);
 
     // Validation
-    if (!employeeName.trim() || !employeeDesignation.trim() || !employeeJobRole.trim()) {
+    if (
+      !employeeName.trim() ||
+      !employeeDesignation.trim() ||
+      !employeeJobRole.trim()
+    ) {
       toast({
         title: "Error",
         description: "Please fill in all fields",
@@ -89,19 +106,34 @@ const EditEmployee = () => {
       return;
     }
 
+    if (
+      originalEmployee &&
+      employeeName.trim() === originalEmployee.employeeName &&
+      employeeDesignation.trim() === originalEmployee.employeeDesignation &&
+      employeeJobRole.trim() === originalEmployee.employeeJobRole
+    ) {
+      toast({
+        title: "No Changes Detected",
+        description: "Please modify at least one field before submitting.",
+        variant: "destructive",
+      });
+      setIsLoading(false);
+      return;
+    }
+
     try {
       const response = await fetch(`http://localhost:8000/employee/update`, {
-        method: 'PUT',
-        headers: { 
-          'Content-Type': 'application/json' 
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           id,
-          employeeName: employeeName.trim(), 
-          employeeDesignation: employeeDesignation.trim(), 
-          employeeJobRole: employeeJobRole.trim() 
+          employeeName: employeeName.trim(),
+          employeeDesignation: employeeDesignation.trim(),
+          employeeJobRole: employeeJobRole.trim(),
         }),
-        credentials:'include'
+        credentials: "include",
       });
 
       if (response.status >= 200 && response.status < 300) {
@@ -109,15 +141,18 @@ const EditEmployee = () => {
           title: "Success",
           description: "Employee updated successfully",
         });
-        navigate('/dashboard');
+        navigate("/dashboard");
       } else {
-        throw new Error(`Failed to update employee. Status: ${response.status}`);
+        throw new Error(
+          `Failed to update employee. Status: ${response.status}`
+        );
       }
     } catch (error) {
-      console.error('Error updating employee:', error);
+      console.error("Error updating employee:", error);
       toast({
         title: "Error",
-        description: "Failed to update employee. Please check if the backend server is running.",
+        description:
+          "Failed to update employee. Please check if the backend server is running.",
         variant: "destructive",
       });
     }
@@ -156,7 +191,9 @@ const EditEmployee = () => {
       <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <Card>
           <CardHeader>
-            <CardTitle className="text-2xl font-bold">Update Employee Details</CardTitle>
+            <CardTitle className="text-2xl font-bold">
+              Update Employee Details
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
@@ -176,7 +213,10 @@ const EditEmployee = () => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="employeeDesignation" className="text-sm font-medium">
+                <Label
+                  htmlFor="employeeDesignation"
+                  className="text-sm font-medium"
+                >
                   Designation <span className="text-red-500">*</span>
                 </Label>
                 <Input
@@ -191,24 +231,45 @@ const EditEmployee = () => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="employeeJobRole" className="text-sm font-medium">
+                <Label
+                  htmlFor="employeeJobRole"
+                  className="text-sm font-medium"
+                >
                   Job Role <span className="text-red-500">*</span>
                 </Label>
-                <Select value={employeeJobRole} onValueChange={setEmployeeJobRole} required>
+                <Select
+                  value={employeeJobRole}
+                  onValueChange={setEmployeeJobRole}
+                  required
+                >
                   <SelectTrigger className="h-12">
                     <SelectValue placeholder="Select a job role" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Python Developer">Python Developer</SelectItem>
-                    <SelectItem value="React Developer">React Developer</SelectItem>
-                    <SelectItem value="Full Stack Developer">Full Stack Developer</SelectItem>
-                    <SelectItem value="DevOps Consultant">DevOps Consultant</SelectItem>
-                    <SelectItem value="Project Manager">Project Manager</SelectItem>
-                    <SelectItem value="UI/UX Designer">UI/UX Designer</SelectItem>
+                    <SelectItem value="Python Developer">
+                      Python Developer
+                    </SelectItem>
+                    <SelectItem value="React Developer">
+                      React Developer
+                    </SelectItem>
+                    <SelectItem value="Full Stack Developer">
+                      Full Stack Developer
+                    </SelectItem>
+                    <SelectItem value="DevOps Consultant">
+                      DevOps Consultant
+                    </SelectItem>
+                    <SelectItem value="Project Manager">
+                      Project Manager
+                    </SelectItem>
+                    <SelectItem value="UI/UX Designer">
+                      UI/UX Designer
+                    </SelectItem>
                     <SelectItem value="Data Analyst">Data Analyst</SelectItem>
                     <SelectItem value="QA Tester">QA Tester</SelectItem>
                     <SelectItem value="HR Specialist">HR Specialist</SelectItem>
-                    <SelectItem value="System Administrator">System Administrator</SelectItem>
+                    <SelectItem value="System Administrator">
+                      System Administrator
+                    </SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -232,7 +293,11 @@ const EditEmployee = () => {
                   )}
                 </Button>
                 <Link to="/dashboard" className="flex-1">
-                  <Button type="button" variant="outline" className="w-full h-12">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="w-full h-12"
+                  >
                     Cancel
                   </Button>
                 </Link>

@@ -6,5 +6,4 @@ import com.example.employee.models.Employee;
 
 @Repository
 public interface EmployeeRepository extends MongoRepository<Employee, String> {
-
 }

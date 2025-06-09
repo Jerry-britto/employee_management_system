@@ -61,12 +61,22 @@ const Register = () => {
 
     try {
     
-      await fetch('http://localhost:8000/auth/register', {
+     const res =  await fetch('http://localhost:8000/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password }),
         credentials:'include'
       });
+
+      if (res.status === 400) {
+        toast({
+          title: "Error",
+          description: "username already exists",
+          variant:"destructive"
+        });
+        setIsLoading(false);
+        return;
+      }
 
       // Simulated registration - replace with actual API call
       setTimeout(() => {

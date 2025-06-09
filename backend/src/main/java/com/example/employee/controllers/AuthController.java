@@ -29,9 +29,10 @@ public class AuthController {
     public ResponseEntity<String> registerPost(@Valid @RequestBody AuthUser user) {
         System.out.println("POST /register endpoint hit");
         System.out.println("Request body: " + user.getUsername() +" "+user.getPassword());
-//        if (userRepository.findOne(user.getUsername())) {
-//            return ResponseEntity.badRequest().body("Username already exists");
-//        }
+        AuthUser existingUser = userRepository.findByUsername(user.getUsername()).orElse(null);
+        if (existingUser != null){
+            return ResponseEntity.badRequest().body("Username already exists");
+        }
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         userRepository.save(user);
         return ResponseEntity.ok("User registered successfully");
